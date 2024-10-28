@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -10,8 +10,10 @@ import {
   PlusCircle,
   Settings,
   Shield,
+  Loader2,
 } from "lucide-react"
 import { SortingState, ColumnFiltersState, PaginationState } from "@tanstack/react-table"
+import debounce from "lodash/debounce"
 
 import {
   Card,
@@ -92,8 +94,23 @@ export default function LicensesPage() {
     })
   }
 
+  // Create a debounced refresh trigger
+  const debouncedRefreshTrigger = useMemo(
+    () => debounce(() => {
+      setRefreshTrigger(prev => prev + 1)
+    }, 500),
+    []
+  )
+
+  // Watch for filter changes and trigger debounced refresh
+  useEffect(() => {
+    debouncedRefreshTrigger()
+  }, [columnFilters, debouncedRefreshTrigger])
+
   useEffect(() => {
     const fetchLicenses = async () => {
+      setLoading(true)
+      
       try {
         const sortField = sorting.length > 0 ? sorting[0].id : undefined
         const sortOrder = sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined
@@ -103,31 +120,39 @@ export default function LicensesPage() {
           url: 'url',
           token: 'token',
           status: 'status',
-          createdAt: 'createdAt',
-          updatedAt: 'updatedAt'
+          createdAt: 'created_at',
+          updatedAt: 'updated_at'
         }
 
+        // Build filters object
         const filters: Record<string, string> = {}
         columnFilters.forEach((filter) => {
-          if (typeof filter.value === 'string') {
+          if (filter.value) {
             // Map the filter field to backend field name
             const backendField = fieldMapping[filter.id] || filter.id
-            filters[backendField] = filter.value
+            // For string fields, use the filter value directly
+            if (typeof filter.value === 'string') {
+              filters[backendField] = filter.value
+            }
           }
         })
 
         // Map the sort field to backend field name
         const backendSortField = sortField ? (fieldMapping[sortField] || sortField) : undefined
 
-        const response = await api.get("/licenses", {
-          params: {
-            page: pagination.pageIndex + 1,
-            pageSize: pagination.pageSize,
-            sortBy: backendSortField,
-            sortOrder: sortOrder,
-            ...filters,
-          },
-        })
+        const params: Record<string, any> = {
+          page: pagination.pageIndex + 1,
+          pageSize: pagination.pageSize,
+          sortBy: backendSortField,
+          sortOrder: sortOrder,
+        }
+
+        // Only add filters if there are any
+        if (Object.keys(filters).length > 0) {
+          params.filters = JSON.stringify(filters)
+        }
+
+        const response = await api.get("/licenses", { params })
 
         const licensesData = Array.isArray(response.data) ? response.data : response.data.data
         const total = response.data.total || licensesData.length
@@ -151,7 +176,7 @@ export default function LicensesPage() {
     }
 
     fetchLicenses()
-  }, [refreshTrigger, sorting, columnFilters, pagination])
+  }, [refreshTrigger, sorting, pagination])
 
   return (
     <TooltipProvider>
@@ -259,25 +284,29 @@ export default function LicensesPage() {
               <CardHeader>
                 <CardTitle>Licenses</CardTitle>
                 <CardDescription>
-                  Manage your software licenses and view their status.
+                  Manage licenses and view their status.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div>Loading...</div>
-                ) : (
-                  <DataTable 
-                    columns={columns(handleEdit)} 
-                    data={licenses}
-                    sorting={sorting}
-                    setSorting={setSorting}
-                    columnFilters={columnFilters}
-                    setColumnFilters={setColumnFilters}
-                    pagination={pagination}
-                    setPagination={setPagination}
-                    pageCount={Math.ceil(totalRows / pagination.pageSize)}
-                  />
+              <CardContent className="relative">
+                {loading && (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Loading licenses...</span>
+                    </div>
+                  </div>
                 )}
+                <DataTable 
+                  columns={columns(handleEdit)} 
+                  data={licenses}
+                  sorting={sorting}
+                  setSorting={setSorting}
+                  columnFilters={columnFilters}
+                  setColumnFilters={setColumnFilters}
+                  pagination={pagination}
+                  setPagination={setPagination}
+                  pageCount={Math.ceil(totalRows / pagination.pageSize)}
+                />
               </CardContent>
             </Card>
           </main>
@@ -286,7 +315,7 @@ export default function LicensesPage() {
         {/* Add/Edit License Dialog */}
         <Sheet
           open={isAddingLicense || !!editingLicense}
-          onOpenChange={(open) => {
+          onOpenChange={(open: boolean) => {
             if (!open) {
               setIsAddingLicense(false)
               setEditingLicense(undefined)

@@ -39,6 +39,12 @@ export const columns = (onEdit: (license: License) => void): ColumnDef<License>[
     enableHiding: false,
   },
   {
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ID" />
+    ),
+  },
+  {
     accessorKey: "domain",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Domain" />

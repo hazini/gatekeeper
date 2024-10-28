@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useCallback, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   Home,
   Key,
@@ -11,7 +11,8 @@ import {
   Search,
   Settings,
   Shield,
-} from 'lucide-react';
+} from "lucide-react"
+import { SortingState, ColumnFiltersState, PaginationState } from "@tanstack/react-table"
 
 import {
   Card,
@@ -19,36 +20,109 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Sheet, SheetContent, SheetTrigger } from '../../components/ui/sheet';
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
-} from '../../components/ui/tooltip';
-import { Button } from '../../components/ui/button';
-import { LicenseForm } from '../../components/LicenseForm';
-import { LicenseTable } from '../../components/LicenseTable';
+} from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
+import { LicenseForm } from "@/components/LicenseForm"
+import { DataTable } from "./data-table"
+import { columns } from "./columns"
+import { api } from "@/services/api"
+import { License } from "./columns"
 
 export default function LicensesPage() {
-  const router = useRouter();
-  const [isAddingLicense, setIsAddingLicense] = useState(false);
-  const [editingLicense, setEditingLicense] = useState<any>(undefined);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const router = useRouter()
+  const [isAddingLicense, setIsAddingLicense] = useState(false)
+  const [editingLicense, setEditingLicense] = useState<any>(undefined)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [licenses, setLicenses] = useState<License[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [totalRows, setTotalRows] = useState(0)
 
   // If no token, don't render anything (will redirect)
-  if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
-    router.push('/login');
-    return null;
+  if (typeof window !== "undefined" && !localStorage.getItem("token")) {
+    router.push("/login")
+    return null
   }
 
   const handleLicenseSuccess = useCallback(() => {
-    setIsAddingLicense(false);
-    setEditingLicense(undefined);
-    setRefreshTrigger(prev => prev + 1);
-  }, []);
+    setIsAddingLicense(false)
+    setEditingLicense(undefined)
+    setRefreshTrigger((prev) => prev + 1)
+  }, [])
+
+  useEffect(() => {
+    const fetchLicenses = async () => {
+      try {
+        const sortField = sorting.length > 0 ? sorting[0].id : undefined
+        const sortOrder = sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined
+        
+        // Map frontend field names to backend field names
+        const fieldMapping: Record<string, string> = {
+          url: 'url',
+          token: 'token',
+          status: 'status',
+          createdAt: 'created_at',
+          updatedAt: 'updated_at'
+        }
+
+        const filters: Record<string, string> = {}
+        columnFilters.forEach((filter) => {
+          if (typeof filter.value === 'string') {
+            // Map the filter field to backend field name
+            const backendField = fieldMapping[filter.id] || filter.id
+            filters[backendField] = filter.value
+          }
+        })
+
+        // Map the sort field to backend field name
+        const backendSortField = sortField ? (fieldMapping[sortField] || sortField) : undefined
+
+        const response = await api.get("/licenses", {
+          params: {
+            page: pagination.pageIndex + 1,
+            pageSize: pagination.pageSize,
+            sortBy: backendSortField,
+            sortOrder: sortOrder,
+            ...filters,
+          },
+        })
+
+        const licensesData = Array.isArray(response.data) ? response.data : response.data.data
+        const total = response.data.total || licensesData.length
+        
+        const formattedLicenses = licensesData.map((license: any) => ({
+          id: license.id.toString(),
+          url: license.url,
+          token: license.token,
+          status: license.status ? "Active" : "Inactive",
+          created_at: license.created_at,
+          updated_at: license.updated_at || license.created_at,
+        }))
+        
+        setLicenses(formattedLicenses)
+        setTotalRows(total)
+      } catch (error) {
+        console.error("Failed to fetch licenses:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLicenses()
+  }, [refreshTrigger, sorting, columnFilters, pagination])
 
   return (
     <TooltipProvider>
@@ -138,14 +212,13 @@ export default function LicensesPage() {
               </SheetContent>
             </Sheet>
             <div className="relative ml-auto flex-1 md:grow-0">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search licenses..."
-                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-              />
+
             </div>
-            <Button size="sm" className="h-8 gap-1" onClick={() => setIsAddingLicense(true)}>
+            <Button
+              size="sm"
+              className="h-8 gap-1"
+              onClick={() => setIsAddingLicense(true)}
+            >
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Add License
@@ -161,19 +234,33 @@ export default function LicensesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <LicenseTable onLicenseChange={handleLicenseSuccess} key={refreshTrigger} />
+                {loading ? (
+                  <div>Loading...</div>
+                ) : (
+                  <DataTable 
+                    columns={columns} 
+                    data={licenses}
+                    sorting={sorting}
+                    setSorting={setSorting}
+                    columnFilters={columnFilters}
+                    setColumnFilters={setColumnFilters}
+                    pagination={pagination}
+                    setPagination={setPagination}
+                    pageCount={Math.ceil(totalRows / pagination.pageSize)}
+                  />
+                )}
               </CardContent>
             </Card>
           </main>
         </div>
 
         {/* Add/Edit License Dialog */}
-        <Sheet 
-          open={isAddingLicense || !!editingLicense} 
+        <Sheet
+          open={isAddingLicense || !!editingLicense}
           onOpenChange={(open) => {
             if (!open) {
-              setIsAddingLicense(false);
-              setEditingLicense(undefined);
+              setIsAddingLicense(false)
+              setEditingLicense(undefined)
             }
           }}
         >
@@ -186,5 +273,5 @@ export default function LicensesPage() {
         </Sheet>
       </div>
     </TooltipProvider>
-  );
+  )
 }

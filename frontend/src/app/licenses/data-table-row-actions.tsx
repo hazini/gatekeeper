@@ -16,9 +16,10 @@ import { License } from "./columns"
 
 interface DataTableRowActionsProps {
   row: Row<License>
+  onEdit: (license: License) => void
 }
 
-export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+export function DataTableRowActions({ row, onEdit }: DataTableRowActionsProps) {
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this license?")) {
       try {
@@ -43,7 +44,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem>Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleDelete} className="text-red-600">
           Delete

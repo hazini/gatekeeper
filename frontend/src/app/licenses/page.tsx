@@ -8,7 +8,6 @@ import {
   Key,
   PanelLeft,
   PlusCircle,
-  Search,
   Settings,
   Shield,
 } from "lucide-react"
@@ -21,7 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   Tooltip,
@@ -36,10 +34,31 @@ import { columns } from "./columns"
 import { api } from "@/services/api"
 import { License } from "./columns"
 
+// Type for the form's license data
+interface FormLicense {
+  id: number;
+  url: string;
+  token: string;
+  status: boolean;
+}
+
+// Helper function to format dates
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString)
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleString()
+    }
+    return dateString
+  } catch {
+    return dateString
+  }
+}
+
 export default function LicensesPage() {
   const router = useRouter()
   const [isAddingLicense, setIsAddingLicense] = useState(false)
-  const [editingLicense, setEditingLicense] = useState<any>(undefined)
+  const [editingLicense, setEditingLicense] = useState<FormLicense | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [licenses, setLicenses] = useState<License[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,6 +82,16 @@ export default function LicensesPage() {
     setRefreshTrigger((prev) => prev + 1)
   }, [])
 
+  const handleEdit = (license: License) => {
+    // Transform the table license data to the form format
+    setEditingLicense({
+      id: parseInt(license.id),
+      url: license.url,
+      token: license.token,
+      status: license.status === "Active",
+    })
+  }
+
   useEffect(() => {
     const fetchLicenses = async () => {
       try {
@@ -74,8 +103,8 @@ export default function LicensesPage() {
           url: 'url',
           token: 'token',
           status: 'status',
-          createdAt: 'created_at',
-          updatedAt: 'updated_at'
+          createdAt: 'createdAt',
+          updatedAt: 'updatedAt'
         }
 
         const filters: Record<string, string> = {}
@@ -108,8 +137,8 @@ export default function LicensesPage() {
           url: license.url,
           token: license.token,
           status: license.status ? "Active" : "Inactive",
-          created_at: license.created_at,
-          updated_at: license.updated_at || license.created_at,
+          createdAt: formatDate(license.createdAt),
+          updatedAt: formatDate(license.updatedAt || license.createdAt),
         }))
         
         setLicenses(formattedLicenses)
@@ -238,7 +267,7 @@ export default function LicensesPage() {
                   <div>Loading...</div>
                 ) : (
                   <DataTable 
-                    columns={columns} 
+                    columns={columns(handleEdit)} 
                     data={licenses}
                     sorting={sorting}
                     setSorting={setSorting}

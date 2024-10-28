@@ -15,7 +15,7 @@ export type License = {
   updatedAt: string
 }
 
-export const columns: ColumnDef<License>[] = [
+export const columns = (onEdit: (license: License) => void): ColumnDef<License>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -62,25 +62,19 @@ export const columns: ColumnDef<License>[] = [
     ),
   },
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created At" />
     ),
-    cell: ({ row }) => {
-      return new Date(row.getValue("created_at")).toLocaleString()
-    },
   },
   {
-    accessorKey: "updated_at",
+    accessorKey: "updatedAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated At" />
     ),
-    cell: ({ row }) => {
-      return new Date(row.getValue("updated_at")).toLocaleString()
-    },
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => <DataTableRowActions row={row} onEdit={onEdit} />,
   },
 ]

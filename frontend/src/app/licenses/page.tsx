@@ -39,7 +39,7 @@ import { License } from "./columns"
 // Type for the form's license data
 interface FormLicense {
   id: number;
-  url: string;
+  domain: string;
   token: string;
   status: boolean;
 }
@@ -88,7 +88,7 @@ export default function LicensesPage() {
     // Transform the table license data to the form format
     setEditingLicense({
       id: parseInt(license.id),
-      url: license.url,
+      domain: license.domain,
       token: license.token,
       status: license.status === "Active",
     })
@@ -117,7 +117,7 @@ export default function LicensesPage() {
         
         // Map frontend field names to backend field names
         const fieldMapping: Record<string, string> = {
-          url: 'url',
+          domain: 'domain',
           token: 'token',
           status: 'status',
           createdAt: 'created_at',
@@ -159,7 +159,7 @@ export default function LicensesPage() {
         
         const formattedLicenses = licensesData.map((license: any) => ({
           id: license.id.toString(),
-          url: license.url,
+          domain: license.domain,
           token: license.token,
           status: license.status ? "Active" : "Inactive",
           createdAt: formatDate(license.createdAt),

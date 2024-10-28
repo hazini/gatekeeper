@@ -6,7 +6,7 @@ export class License {
   id: number;
 
   @Column()
-  url: string;
+  domain: string;
 
   @Column()
   token: string;

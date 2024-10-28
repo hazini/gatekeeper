@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { LicenseService, FindAllParams } from './license.service';
-import { CreateLicenseDto, UpdateLicenseDto, VerifyLicenseDto } from './license.dto';
+import { CreateLicenseDto, UpdateLicenseDto } from './license.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('licenses')
@@ -48,14 +48,5 @@ export class LicenseController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.licenseService.remove(+id);
-  }
-
-  @Post('check-license')
-  async verifyLicense(@Body() verifyLicenseDto: VerifyLicenseDto) {
-    const isValid = await this.licenseService.verifyLicense(
-      verifyLicenseDto.url,
-      verifyLicenseDto.token,
-    );
-    return { valid: isValid };
   }
 }

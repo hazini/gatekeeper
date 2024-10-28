@@ -3,7 +3,7 @@ import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 export class CreateLicenseDto {
   @IsString()
   @IsNotEmpty()
-  url: string;
+  domain: string;
 
   @IsString()
   @IsNotEmpty()
@@ -18,7 +18,7 @@ export class UpdateLicenseDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  url?: string;
+  domain?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -33,7 +33,7 @@ export class UpdateLicenseDto {
 export class VerifyLicenseDto {
   @IsString()
   @IsNotEmpty()
-  url: string;
+  domain: string;
 
   @IsString()
   @IsNotEmpty()

@@ -98,9 +98,9 @@ export class LicenseService {
     await this.licenseRepository.remove(license);
   }
 
-  async verifyLicense(url: string, token: string): Promise<boolean> {
+  async verifyLicense(domain: string, token: string): Promise<boolean> {
     const license = await this.licenseRepository.findOne({
-      where: { url, token },
+      where: { domain, token },
     });
     // License is valid only if it exists and is active
     return !!license && license.status;

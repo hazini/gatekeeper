@@ -21,7 +21,12 @@ import { api } from '../services/api';
 import { SheetHeader, SheetTitle } from './ui/sheet';
 
 const formSchema = z.object({
-  url: z.string().url('Please enter a valid URL'),
+  domain: z.string()
+    .min(1, 'Domain is required')
+    .regex(
+      /^(\*\.)?[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
+      'Please enter a valid domain (e.g., example.com, *.example.com)'
+    ),
   token: z.string().min(1, 'Token is required'),
   status: z.boolean().default(true),
 });
@@ -29,7 +34,7 @@ const formSchema = z.object({
 interface LicenseFormProps {
   license?: {
     id: number;
-    url: string;
+    domain: string;
     token: string;
     status: boolean;
   };
@@ -43,7 +48,7 @@ export function LicenseForm({ license, onSuccess }: LicenseFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      url: license?.url || '',
+      domain: license?.domain || '',
       token: license?.token || '',
       status: license?.status ?? true,
     },
@@ -77,17 +82,20 @@ export function LicenseForm({ license, onSuccess }: LicenseFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="url"
+            name="domain"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>URL</FormLabel>
+                <FormLabel>Domain</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="https://example.com" 
+                    placeholder="example.com or *.example.com" 
                     {...field} 
                     disabled={isLoading}
                   />
                 </FormControl>
+                <FormDescription>
+                  Enter a domain name (e.g., dir.bg, *.rusaliniliev.eu)
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

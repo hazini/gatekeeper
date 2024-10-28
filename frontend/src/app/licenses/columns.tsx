@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 export type License = {
   id: string
-  url: string
+  domain: string
   token: string
   status: string
   createdAt: string
@@ -24,14 +24,14 @@ export const columns = (onEdit: (license: License) => void): ColumnDef<License>[
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
         aria-label="Select row"
       />
     ),
@@ -39,9 +39,9 @@ export const columns = (onEdit: (license: License) => void): ColumnDef<License>[
     enableHiding: false,
   },
   {
-    accessorKey: "url",
+    accessorKey: "domain",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="URL" />
+      <DataTableColumnHeader column={column} title="Domain" />
     ),
   },
   {

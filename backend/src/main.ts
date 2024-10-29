@@ -6,7 +6,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: ['error', 'warn', 'debug', 'log', 'verbose']
+  });
   
   // Get DataSource from app
   const dataSource = app.get(DataSource);
@@ -25,11 +27,20 @@ async function bootstrap() {
     console.error('Error running migrations:', error);
   }
 
-  // Serve static files from public directory
-  app.useStaticAssets(join(__dirname, '..', 'public'));
+  // Configure static file serving
+  const publicPath = join(__dirname, '..', 'public');
+  console.log('Serving static files from:', publicPath);
+  
+  app.useStaticAssets(publicPath, {
+    index: false,
+    prefix: '/'
+  });
 
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
-  await app.listen(3000);
+  
+  await app.listen(3000, () => {
+    console.log('Application is running on: http://localhost:3000');
+  });
 }
 bootstrap();

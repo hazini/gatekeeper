@@ -23,10 +23,14 @@ import { SheetHeader, SheetTitle } from './ui/sheet';
 const formSchema = z.object({
   domain: z.string()
     .min(1, 'Domain is required')
-    .regex(
-      /^(\*\.)?[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
-      'Please enter a valid domain (e.g., example.com, *.example.com)'
-    ),
+    .refine((value) => {
+      // Allow localhost
+      if (value === 'localhost') return true;
+      
+      // Check standard domain pattern
+      const domainPattern = /^(\*\.)?[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+      return domainPattern.test(value);
+    }, 'Please enter a valid domain (e.g., example.com, *.example.com) or localhost'),
   token: z.string().min(1, 'Token is required'),
   status: z.boolean().default(true),
 });
@@ -88,13 +92,13 @@ export function LicenseForm({ license, onSuccess }: LicenseFormProps) {
                 <FormLabel>Domain</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="example.com or *.example.com" 
+                    placeholder="example.com, *.example.com, or localhost" 
                     {...field} 
                     disabled={isLoading}
                   />
                 </FormControl>
                 <FormDescription>
-                  Enter a domain name (e.g., dir.bg, *.rusaliniliev.eu)
+                  Enter a domain name (e.g., dir.bg, *.rusaliniliev.eu) or localhost
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -98,11 +98,33 @@ export class LicenseService {
     await this.licenseRepository.remove(license);
   }
 
+  private matchDomain(licenseDomain: string, requestDomain: string): boolean {
+    // Special case for localhost
+    if (requestDomain === 'localhost' && licenseDomain === 'localhost') {
+      return true;
+    }
+
+    // Handle wildcard domains
+    if (licenseDomain.startsWith('*.')) {
+      const baseDomain = licenseDomain.slice(2); // Remove *. prefix
+      return requestDomain === baseDomain || requestDomain.endsWith('.' + baseDomain);
+    }
+
+    // Exact match
+    return licenseDomain === requestDomain;
+  }
+
   async verifyLicense(domain: string, token: string): Promise<boolean> {
-    const license = await this.licenseRepository.findOne({
-      where: { domain, token },
+    // Get all active licenses
+    const licenses = await this.licenseRepository.find({
+      where: { status: true },
     });
-    // License is valid only if it exists and is active
-    return !!license && license.status;
+
+    // Check each license for a matching domain and token
+    const matchingLicense = licenses.find(license => 
+      this.matchDomain(license.domain, domain) && license.token === token
+    );
+
+    return !!matchingLicense;
   }
 }

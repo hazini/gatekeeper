@@ -1,5 +1,13 @@
 {
+  "scripts": {
+    "add-license-check": "node addLicenseCheck.js",
+    "obfuscate": "javascript-obfuscator backend/public/core_modified.js --output backend/public/ocore.js --config obfuscator-config.json"
+  },
   "dependencies": {
+    "@babel/generator": "^7.26.0",
+    "@babel/parser": "^7.26.1",
+    "@babel/traverse": "^7.25.9",
+    "@babel/types": "^7.26.0",
     "@headlessui/react": "^2.1.9",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@uiw/react-textarea-code-editor": "^3.0.2",

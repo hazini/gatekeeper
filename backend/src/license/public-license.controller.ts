@@ -2,7 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { LicenseService } from './license.service';
 import { VerifyLicenseDto } from './license.dto';
 
-@Controller('public/licenses')
+@Controller('api')
 export class PublicLicenseController {
   constructor(private readonly licenseService: LicenseService) {}
 

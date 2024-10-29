@@ -11,11 +11,11 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findByUsername(username: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: {
-        username: username,
-      } as any, // Type assertion needed due to TypeORM typing limitations
+        email: email,
+      },
     });
   }
 
@@ -27,10 +27,10 @@ export class UserService {
     });
   }
 
-  async create(username: string, password: string): Promise<User> {
+  async create(email: string, password: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = this.userRepository.create({
-      username,
+      email,
       password: hashedPassword,
     });
     return this.userRepository.save(user);

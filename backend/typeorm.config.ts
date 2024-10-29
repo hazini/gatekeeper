@@ -16,6 +16,7 @@ export default new DataSource({
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_DATABASE'),
   entities: [User, License],
+  synchronize: true, // Temporarily enable synchronize
   migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'migrations',
 });

@@ -8,11 +8,11 @@ async function bootstrap() {
 
   try {
     // Create admin user if it doesn't exist
-    const adminUsername = 'admin';
-    const existingUser = await userService.findByUsername(adminUsername);
+    const adminEmail = 'admin@example.com';
+    const existingUser = await userService.findByEmail(adminEmail);
 
     if (!existingUser) {
-      await userService.create(adminUsername, 'admin123');
+      await userService.create(adminEmail, 'admin123');
       console.log('Admin user created successfully');
     } else {
       console.log('Admin user already exists');

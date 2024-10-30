@@ -67,6 +67,32 @@ The server will run on http://localhost:3000
 
 The frontend will run on http://localhost:3001
 
+## Available Commands
+
+The following commands are available in the root package.json:
+
+### `npm run add-license-check`
+Adds license checking functionality to your JavaScript files. This command:
+- Processes your core JavaScript files
+- Adds license verification logic
+- Creates the necessary modifications for license checking
+
+### `npm run obfuscate`
+Obfuscates the modified core JavaScript file for security. This command:
+- Takes the modified core file (backend/public/core_modified.js)
+- Applies code obfuscation using javascript-obfuscator
+- Outputs the obfuscated version to backend/public/ocore.js
+- Uses configuration from obfuscator-config.json
+
+Usage example:
+```bash
+# First add license checking
+npm run add-license-check
+
+# Then obfuscate the modified file
+npm run obfuscate
+```
+
 ## Features
 
 - License Management Dashboard

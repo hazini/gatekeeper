@@ -67,6 +67,16 @@ The server will run on http://localhost:3000
 
 The frontend will run on http://localhost:3001
 
+## Running the Application
+
+To run both the backend and frontend concurrently, you can use the following command from the root directory:
+
+```bash
+npm run start:all
+```
+
+This command will start both the backend server and the frontend development server simultaneously.
+
 ## Available Commands
 
 The following commands are available in the root package.json:

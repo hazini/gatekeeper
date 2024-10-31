@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "start:all": "concurrently \"npm run start --prefix backend\" \"npm run dev --prefix frontend\"",
     "add-license-check": "node addLicenseCheck.js",
     "obfuscate": "javascript-obfuscator backend/public/core_modified.js --output backend/public/ocore.js --config obfuscator-config.json"
   },
@@ -12,5 +13,8 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@uiw/react-textarea-code-editor": "^3.0.2",
     "react-syntax-highlighter": "^15.5.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
   }
 }

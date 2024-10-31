@@ -23,49 +23,24 @@ A full-stack application for managing software licenses with a NestJS backend an
    cd backend
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Copy the example environment file and update it with your database credentials:
+2. Copy the example environment file and update it with your database credentials:
    ```bash
    cp .env.example .env
    ```
 
-4. Create the initial admin user:
-   ```bash
-   npm run seed
-   ```
-   This will create an admin user with:
-   - Email: admin@example.com
-   - Password: admin123
 
-5. Start the backend server:
-   ```bash
-   npm run start:dev
-   ```
+### Project Setup
+### `npm run install:all`
 
-The server will run on http://localhost:3000
+Installs all dependencies for both the backend and frontend. This command:
+- Runs `npm install` in the backend directory
+- Runs `npm seed` in the backend directory
+- Runs `npm install` in the frontend directory
 
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the frontend development server:
-   ```bash
-   npm run dev
-   ```
-
-The frontend will run on http://localhost:3001
+Usage example:
+```bash
+npm run install:all
+```
 
 ## Running the Application
 
@@ -76,6 +51,8 @@ npm run start:all
 ```
 
 This command will start both the backend server and the frontend development server simultaneously.
+The server will run on http://localhost:3000
+The frontend will run on http://localhost:3001
 
 ## Available Commands
 
